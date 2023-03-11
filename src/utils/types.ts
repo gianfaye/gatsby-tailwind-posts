@@ -6,6 +6,6 @@ export interface ApiResponseObject {
   [key: string]: string | number | boolean | GenericObject;
 }
 
-export type IdToApiResponseObject = Record<string, ApiResponseObject>;
+export type IdToApiResponseObject = Record<number, ApiResponseObject>;
 
 export type SortingOrder = "default" | "az" | "za";

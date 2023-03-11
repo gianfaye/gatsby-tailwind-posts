@@ -12,37 +12,39 @@ const PAGE_TOTAL_COUNT = 2;
 
 const IndexPage: React.FC<PageProps> = () => {
   const [postsData, setPostsData] = useState<ApiResponseObject[]>([]);
+  const [usersData, setUsersData] = useState<ApiResponseObject[]>([]);
   const [usersByIdData, setUsersByIdData] = useState<IdToApiResponseObject>(
     {} as IdToApiResponseObject
   );
-
   const [sortedPostsData, setSortedPostsData] = useState<ApiResponseObject[]>(
     []
   );
   const [sortingOrder, setSortingOrder] = useState<SortingOrder>("default");
-
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [postsPerPage, setPostsPerPage] = useState<ApiResponseObject[]>([]);
+  const [selectedAuthor, setSelectedAuthor] = useState<ApiResponseObject>({});
+  const [filteredAuthors, setFilteredAuthors] = useState<ApiResponseObject[]>(
+    []
+  );
+  const [filteredPosts, setFilteredPosts] = useState<ApiResponseObject[]>([]);
+  const [searchKeyword, setSearchKeyword] = useState<string>("");
 
   const getPostsData = async () => {
     const response = await fetch("https://jsonplaceholder.typicode.com/posts");
     const jsonResponse = await response.json();
-
     setPostsData(jsonResponse);
   };
 
   const getUsersData = async () => {
     const response = await fetch("https://jsonplaceholder.typicode.com/users");
     const jsonResponse = await response.json();
-
-    const usersById = jsonResponse.reduce(
-      (accumulator: IdToApiResponseObject, user: ApiResponseObject) => {
-        const userId = user.id as number;
-        accumulator[userId] = user;
-        return accumulator;
-      }
-    ) as IdToApiResponseObject;
-
+    const usersList = [...jsonResponse] as ApiResponseObject[];
+    const usersById = usersList?.reduce((accumulator, user) => {
+      const userId = user?.id as number;
+      accumulator[userId] = user;
+      return accumulator;
+    }, {} as IdToApiResponseObject);
+    setUsersData(jsonResponse);
     setUsersByIdData(usersById);
   };
 
@@ -52,7 +54,21 @@ const IndexPage: React.FC<PageProps> = () => {
   }, []);
 
   useEffect(() => {
-    const sortedPosts = [...postsData].sort(
+    const hasSelectedAuthor = Object.keys(selectedAuthor).length > 0;
+    if (!hasSelectedAuthor) {
+      setFilteredPosts(postsData);
+      return;
+    }
+    const postsByAuthor = postsData.filter((post) => {
+      const postAuthorId = post.userId as number;
+      const selectedAuthorId = selectedAuthor?.id as number;
+      return postAuthorId === selectedAuthorId;
+    });
+    setFilteredPosts(postsByAuthor);
+  }, [selectedAuthor, postsData]);
+
+  useEffect(() => {
+    const sortedPosts = [...filteredPosts].sort(
       (a: ApiResponseObject, b: ApiResponseObject) => {
         if (sortingOrder === "az")
           return a.title < b.title ? -1 : a.title > b.title ? 1 : 0;
@@ -62,7 +78,7 @@ const IndexPage: React.FC<PageProps> = () => {
       }
     );
     setSortedPostsData(sortedPosts);
-  }, [postsData, sortingOrder]);
+  }, [filteredPosts, sortingOrder]);
 
   useEffect(() => {
     const postsTotalCount = sortedPostsData.length;
@@ -74,10 +90,37 @@ const IndexPage: React.FC<PageProps> = () => {
     setPostsPerPage(currentPosts);
   }, [sortedPostsData, currentPage]);
 
+  useEffect(() => {
+    if (searchKeyword.length > 0) {
+      const filtered = usersData.filter((user) =>
+        (user.name as string)
+          .toLowerCase()
+          .includes(searchKeyword.toLowerCase())
+      );
+      setFilteredAuthors(filtered);
+    } else {
+      setFilteredAuthors([]);
+      setSelectedAuthor({});
+    }
+  }, [searchKeyword, usersData]);
+
   const handlePostsSorting = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const sort = event.target.value as SortingOrder;
     setSortingOrder(sort);
   };
+
+  const handleAuthorSelect = (author: ApiResponseObject) => {
+    setSelectedAuthor(author);
+    setSearchKeyword(author.name as string);
+  };
+
+  const handleResetFilter = () => {
+    setSelectedAuthor({});
+    setSearchKeyword("");
+  };
+
+  const hasSelectedAuthor = Object.keys(selectedAuthor).length > 0;
+  const hasFilteredAuthors = filteredAuthors.length > 0;
 
   return (
     <main>
@@ -92,7 +135,7 @@ const IndexPage: React.FC<PageProps> = () => {
                 Here are the sample posts from the JSON placeholder API
               </p>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="mx-auto max-w-2xl lg:mx-0 flex items-center space-x-4 mt-2">
               <label htmlFor="sorting">Sort by:</label>
               <select
                 id="sorting"
@@ -104,6 +147,41 @@ const IndexPage: React.FC<PageProps> = () => {
                 <option value="az">A-Z</option>
                 <option value="za">Z-A</option>
               </select>
+            </div>
+
+            <div className="mx-auto max-w-2xl lg:mx-0 flex items-center space-x-4 mt-2">
+              <div className="relative">
+                <label htmlFor="filtering">Author:</label>
+                <input
+                  id="filtering"
+                  type="text"
+                  placeholder="Filter by author"
+                  value={searchKeyword}
+                  onChange={(e) => setSearchKeyword(e.target.value)}
+                  className="border rounded py-1 px-2 ml-5"
+                />
+                {!hasSelectedAuthor && hasFilteredAuthors && (
+                  <div className="absolute z-10 top-full left-10 w-half bg-white shadow-lg rounded-md ml-5">
+                    <ul className="py-2">
+                      {filteredAuthors.map((author) => (
+                        <li
+                          key={author.id as string}
+                          onClick={() => handleAuthorSelect(author)}
+                          className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                        >
+                          {author.name as string}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                <button
+                  className="ml-3 bg-black text-white px-4 py-1 rounded"
+                  onClick={handleResetFilter}
+                >
+                  Reset
+                </button>
+              </div>
             </div>
           </div>
 
