@@ -11,12 +11,11 @@ const PostsList = ({ posts, usersById }: PostsListProps) => {
       {posts.map((post) => {
         const { id, userId, title, body } = post;
         const author = usersById[userId as number];
-        // console.log('author', author)
         const authorName = (author?.name as string) ?? "";
         return (
           <article
             key={id as string}
-            className="flex max-w-xl flex-col items-start justify-between"
+            className="flex max-w-xl flex-col items-start"
           >
             <div className="flex items-center gap-x-4 text-xs"></div>
             <div className="group relative">
