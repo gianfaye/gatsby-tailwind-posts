@@ -1,14 +1,6 @@
 import React, { useState, useEffect } from "react";
 import type { HeadFC, PageProps } from "gatsby";
-
-interface GenericObject {
-  [key: string]: string | number | boolean;
-}
-interface ApiResponseObject {
-  [key: string]: string | number | boolean | GenericObject;
-}
-
-type IdToApiResponseObject = Record<string, ApiResponseObject>;
+import { ApiResponseObject, IdToApiResponseObject } from "../utils/types";
 
 const PAGE_TOTAL_COUNT = 2;
 
@@ -94,7 +86,9 @@ const IndexPage: React.FC<PageProps> = () => {
             )}
             <div className="col-start-2 col-end-3">
               <div className="flex justify-center items-center h-full">
-                <span>Showing page {currentPage} of {PAGE_TOTAL_COUNT}</span>
+                <span>
+                  Showing page {currentPage} of {PAGE_TOTAL_COUNT}
+                </span>
               </div>
             </div>
             {!isLastPage && (
