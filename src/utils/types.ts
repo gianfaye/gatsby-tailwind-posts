@@ -7,3 +7,5 @@ export interface ApiResponseObject {
 }
 
 export type IdToApiResponseObject = Record<string, ApiResponseObject>;
+
+export type SortingOrder = "default" | "az" | "za";

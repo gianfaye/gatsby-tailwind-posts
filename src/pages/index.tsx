@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from "react";
 import type { HeadFC, PageProps } from "gatsby";
-import { ApiResponseObject, IdToApiResponseObject } from "../utils/types";
+import {
+  ApiResponseObject,
+  IdToApiResponseObject,
+  SortingOrder,
+} from "../utils/types";
 
 const PAGE_TOTAL_COUNT = 2;
 
@@ -9,9 +13,14 @@ const IndexPage: React.FC<PageProps> = () => {
   const [usersByIdData, setUsersByIdData] = useState<IdToApiResponseObject>(
     {} as IdToApiResponseObject
   );
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [postsToShow, setPostsToShow] = useState<ApiResponseObject[]>([]);
 
+  const [sortedPostsData, setSortedPostsData] = useState<ApiResponseObject[]>(
+    []
+  );
+  const [sortingOrder, setSortingOrder] = useState<SortingOrder>("default");
+
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [postsPerPage, setPostsPerPage] = useState<ApiResponseObject[]>([]);
   const isFirstPage = currentPage === 1;
   const isLastPage = currentPage === PAGE_TOTAL_COUNT;
 
@@ -43,14 +52,27 @@ const IndexPage: React.FC<PageProps> = () => {
   }, []);
 
   useEffect(() => {
-    const postsTotalCount = postsData.length;
+    const sortedPosts = [...postsData].sort(
+      (a: ApiResponseObject, b: ApiResponseObject) => {
+        if (sortingOrder === "az")
+          return a.title < b.title ? -1 : a.title > b.title ? 1 : 0;
+        if (sortingOrder === "za")
+          return a.title > b.title ? -1 : a.title < b.title ? 1 : 0;
+        return 0;
+      }
+    );
+    setSortedPostsData(sortedPosts);
+  }, [postsData, sortingOrder]);
+
+  useEffect(() => {
+    const postsTotalCount = sortedPostsData.length;
     if (postsTotalCount <= 0) return;
-    const postsPerPage = postsTotalCount / PAGE_TOTAL_COUNT;
-    const endIndex = currentPage * postsPerPage;
-    const startIndex = endIndex - postsPerPage;
-    const currentPosts = postsData.slice(startIndex, endIndex);
-    setPostsToShow(currentPosts);
-  }, [postsData, currentPage]);
+    const postsToShow = postsTotalCount / PAGE_TOTAL_COUNT;
+    const endIndex = currentPage * postsToShow;
+    const startIndex = endIndex - postsToShow;
+    const currentPosts = sortedPostsData.slice(startIndex, endIndex);
+    setPostsPerPage(currentPosts);
+  }, [sortedPostsData, currentPage]);
 
   const handlePageChange = (action: string) => {
     if (action === "prev") {
@@ -60,17 +82,37 @@ const IndexPage: React.FC<PageProps> = () => {
     setCurrentPage(currentPage + 1);
   };
 
+  const handlePostsSorting = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const sort = event.target.value as SortingOrder;
+    setSortingOrder(sort);
+  };
+
   return (
     <main>
       <div className="bg-white py-24 sm:py-32">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="mx-auto max-w-2xl lg:mx-0">
-            <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-              Posts
-            </h2>
-            <p className="mt-2 text-lg leading-8 text-gray-600">
-              Here are the sample posts from the JSON placeholder API
-            </p>
+          <div>
+            <div className="mx-auto max-w-2xl lg:mx-0">
+              <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+                Posts
+              </h2>
+              <p className="mt-2 text-lg leading-8 text-gray-600">
+                Here are the sample posts from the JSON placeholder API
+              </p>
+            </div>
+            <div className="flex items-center space-x-4">
+              <label htmlFor="sorting">Sort by:</label>
+              <select
+                id="sorting"
+                value={sortingOrder}
+                onChange={handlePostsSorting}
+                className="border rounded py-1 px-2"
+              >
+                <option value="default">Default</option>
+                <option value="az">A-Z</option>
+                <option value="za">Z-A</option>
+              </select>
+            </div>
           </div>
 
           <div className="grid grid-cols-3 border-t border-gray-200 pt-10 mt-10">
@@ -104,7 +146,7 @@ const IndexPage: React.FC<PageProps> = () => {
           </div>
 
           <div className="mx-auto mt-10 grid max-w-2xl grid-cols-1 gap-y-16 gap-x-8 sm:mt-16 sm:pt-8 lg:mx-0 lg:max-w-none lg:grid-cols-3">
-            {postsToShow.map((post) => {
+            {postsPerPage.map((post) => {
               const { id, userId, title, body } = post;
               const author = usersByIdData[userId as number];
               const authorName = (author?.name as string) ?? "No author";
