@@ -7,6 +7,7 @@ import {
 } from "../utils/types";
 import PostsList from "../components/PostsList";
 import PageSelector from "../components/PageSelector";
+import AuthorFilter from "../components/AuthorFilter";
 
 const PAGE_TOTAL_COUNT = 2;
 
@@ -109,19 +110,6 @@ const IndexPage: React.FC<PageProps> = () => {
     setSortingOrder(sort);
   };
 
-  const handleAuthorSelect = (author: ApiResponseObject) => {
-    setSelectedAuthor(author);
-    setSearchKeyword(author.name as string);
-  };
-
-  const handleResetFilter = () => {
-    setSelectedAuthor({});
-    setSearchKeyword("");
-  };
-
-  const hasSelectedAuthor = Object.keys(selectedAuthor).length > 0;
-  const hasFilteredAuthors = filteredAuthors.length > 0;
-
   return (
     <main>
       <div className="bg-white py-24 sm:py-32">
@@ -149,40 +137,13 @@ const IndexPage: React.FC<PageProps> = () => {
               </select>
             </div>
 
-            <div className="mx-auto max-w-2xl lg:mx-0 flex items-center space-x-4 mt-2">
-              <div className="relative">
-                <label htmlFor="filtering">Author:</label>
-                <input
-                  id="filtering"
-                  type="text"
-                  placeholder="Filter by author"
-                  value={searchKeyword}
-                  onChange={(e) => setSearchKeyword(e.target.value)}
-                  className="border rounded py-1 px-2 ml-5"
-                />
-                {!hasSelectedAuthor && hasFilteredAuthors && (
-                  <div className="absolute z-10 top-full left-10 w-half bg-white shadow-lg rounded-md ml-5">
-                    <ul className="py-2">
-                      {filteredAuthors.map((author) => (
-                        <li
-                          key={author.id as string}
-                          onClick={() => handleAuthorSelect(author)}
-                          className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                        >
-                          {author.name as string}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                <button
-                  className="ml-3 bg-black text-white px-4 py-1 rounded"
-                  onClick={handleResetFilter}
-                >
-                  Reset
-                </button>
-              </div>
-            </div>
+            <AuthorFilter
+              searchKeyword={searchKeyword}
+              setSearchKeyword={setSearchKeyword}
+              filteredAuthors={filteredAuthors}
+              selectedAuthor={selectedAuthor}
+              setSelectedAuthor={setSelectedAuthor}
+            />
           </div>
 
           <PageSelector
