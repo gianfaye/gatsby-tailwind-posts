@@ -8,6 +8,7 @@ import {
 import PostsList from "../components/PostsList";
 import PageSelector from "../components/PageSelector";
 import AuthorFilter from "../components/AuthorFilter";
+import PostsSort from "../components/PostsSort";
 
 const PAGE_TOTAL_COUNT = 2;
 
@@ -105,11 +106,6 @@ const IndexPage: React.FC<PageProps> = () => {
     }
   }, [searchKeyword, usersData]);
 
-  const handlePostsSorting = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const sort = event.target.value as SortingOrder;
-    setSortingOrder(sort);
-  };
-
   return (
     <main>
       <div className="bg-white py-24 sm:py-32">
@@ -123,19 +119,11 @@ const IndexPage: React.FC<PageProps> = () => {
                 Here are the sample posts from the JSON placeholder API
               </p>
             </div>
-            <div className="mx-auto max-w-2xl lg:mx-0 flex items-center space-x-4 mt-2">
-              <label htmlFor="sorting">Sort by:</label>
-              <select
-                id="sorting"
-                value={sortingOrder}
-                onChange={handlePostsSorting}
-                className="border rounded py-1 px-2"
-              >
-                <option value="default">Default</option>
-                <option value="az">A-Z</option>
-                <option value="za">Z-A</option>
-              </select>
-            </div>
+
+            <PostsSort
+              sortingOrder={sortingOrder}
+              setSortingOrder={setSortingOrder}
+            />
 
             <AuthorFilter
               searchKeyword={searchKeyword}
