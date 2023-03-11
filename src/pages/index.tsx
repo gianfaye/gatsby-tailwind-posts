@@ -32,6 +32,7 @@ const IndexPage: React.FC<PageProps> = () => {
   );
   const [filteredPosts, setFilteredPosts] = useState<ApiResponseObject[]>([]);
   const [searchKeyword, setSearchKeyword] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const getPostsData = async () => {
     const response = await fetch("https://jsonplaceholder.typicode.com/posts");
@@ -53,6 +54,7 @@ const IndexPage: React.FC<PageProps> = () => {
   };
 
   useEffect(() => {
+    setIsLoading(true);
     getPostsData();
     getUsersData();
   }, []);
@@ -92,6 +94,7 @@ const IndexPage: React.FC<PageProps> = () => {
     const startIndex = endIndex - postsToShow;
     const currentPosts = sortedPostsData.slice(startIndex, endIndex);
     setPostsPerPage(currentPosts);
+    setIsLoading(false);
   }, [sortedPostsData, currentPage]);
 
   useEffect(() => {
@@ -142,9 +145,17 @@ const IndexPage: React.FC<PageProps> = () => {
             setCurrentPage={setCurrentPage}
           />
 
-          <div className="mx-auto mt-10 grid max-w-2xl grid-cols-1 gap-y-16 gap-x-8 sm:mt-16 sm:pt-8 lg:mx-0 lg:max-w-none lg:grid-cols-3">
-            <PostsList posts={postsPerPage} usersById={usersByIdData} />
-          </div>
+          {!isLoading && (
+            <div className="mx-auto mt-10 grid max-w-2xl grid-cols-1 gap-y-16 gap-x-8 sm:mt-16 sm:pt-8 lg:mx-0 lg:max-w-none lg:grid-cols-3">
+              <PostsList posts={postsPerPage} usersById={usersByIdData} />
+            </div>
+          )}
+
+          {isLoading && (
+            <div className="flex mx-auto my-10 max-w-2xl sm:my-16 sm:py-8 lg:mx-0 lg:max-w-none justify-center items-center">
+              <span>Loading posts...</span>
+            </div>
+          )}
 
           <PageSelector
             currentPage={currentPage}
