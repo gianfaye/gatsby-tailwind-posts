@@ -5,6 +5,7 @@ import {
   IdToApiResponseObject,
   SortingOrder,
 } from "../utils/types";
+import PostsList from "../components/PostsList";
 
 const PAGE_TOTAL_COUNT = 2;
 
@@ -146,37 +147,7 @@ const IndexPage: React.FC<PageProps> = () => {
           </div>
 
           <div className="mx-auto mt-10 grid max-w-2xl grid-cols-1 gap-y-16 gap-x-8 sm:mt-16 sm:pt-8 lg:mx-0 lg:max-w-none lg:grid-cols-3">
-            {postsPerPage.map((post) => {
-              const { id, userId, title, body } = post;
-              const author = usersByIdData[userId as number];
-              const authorName = (author?.name as string) ?? "No author";
-              return (
-                <article
-                  key={id as string}
-                  className="flex max-w-xl flex-col items-start justify-between"
-                >
-                  <div className="flex items-center gap-x-4 text-xs"></div>
-                  <div className="group relative">
-                    <h3 className="mt-3 text-lg font-semibold leading-6 text-gray-900 group-hover:text-gray-600 capitalize">
-                      <a href="#">{title as string}</a>
-                    </h3>
-                    <p className="mt-5 text-sm leading-6 text-gray-600 line-clamp-3 sentence-case">
-                      {body as string}
-                    </p>
-                  </div>
-                  <div className="relative mt-8 flex items-center gap-x-4">
-                    <div className="text-sm leading-6">
-                      <p className="font-semibold text-gray-900">
-                        <a href="#">
-                          <span className="absolute inset-0" />
-                          {authorName}
-                        </a>
-                      </p>
-                    </div>
-                  </div>
-                </article>
-              );
-            })}
+            <PostsList posts={postsPerPage} usersById={usersByIdData} />
           </div>
         </div>
       </div>
