@@ -10,11 +10,18 @@ interface ApiResponseObject {
 
 type IdToApiResponseObject = Record<string, ApiResponseObject>;
 
+const PAGE_TOTAL_COUNT = 2;
+
 const IndexPage: React.FC<PageProps> = () => {
   const [postsData, setPostsData] = useState<ApiResponseObject[]>([]);
   const [usersByIdData, setUsersByIdData] = useState<IdToApiResponseObject>(
     {} as IdToApiResponseObject
   );
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [postsToShow, setPostsToShow] = useState<ApiResponseObject[]>([]);
+
+  const isFirstPage = currentPage === 1;
+  const isLastPage = currentPage === PAGE_TOTAL_COUNT;
 
   const getPostsData = async () => {
     const response = await fetch("https://jsonplaceholder.typicode.com/posts");
@@ -27,7 +34,6 @@ const IndexPage: React.FC<PageProps> = () => {
     const response = await fetch("https://jsonplaceholder.typicode.com/users");
     const jsonResponse = await response.json();
 
-    /* Transforming data structure for easy lookup on render */
     const usersById = jsonResponse.reduce(
       (accumulator: IdToApiResponseObject, user: ApiResponseObject) => {
         const userId = user.id as number;
@@ -44,6 +50,24 @@ const IndexPage: React.FC<PageProps> = () => {
     getUsersData();
   }, []);
 
+  useEffect(() => {
+    const postsTotalCount = postsData.length;
+    if (postsTotalCount <= 0) return;
+    const postsPerPage = postsTotalCount / PAGE_TOTAL_COUNT;
+    const endIndex = currentPage * postsPerPage;
+    const startIndex = endIndex - postsPerPage;
+    const currentPosts = postsData.slice(startIndex, endIndex);
+    setPostsToShow(currentPosts);
+  }, [postsData, currentPage]);
+
+  const handlePageChange = (action: string) => {
+    if (action === "prev") {
+      setCurrentPage(currentPage - 1);
+      return;
+    }
+    setCurrentPage(currentPage + 1);
+  };
+
   return (
     <main>
       <div className="bg-white py-24 sm:py-32">
@@ -56,8 +80,37 @@ const IndexPage: React.FC<PageProps> = () => {
               Here are the sample posts from the JSON placeholder API
             </p>
           </div>
-          <div className="mx-auto mt-10 grid max-w-2xl grid-cols-1 gap-y-16 gap-x-8 border-t border-gray-200 pt-10 sm:mt-16 sm:pt-16 lg:mx-0 lg:max-w-none lg:grid-cols-3">
-            {postsData.map((post) => {
+
+          <div className="grid grid-cols-3 border-t border-gray-200 pt-10 mt-10">
+            {!isFirstPage && (
+              <div className="col-start-1 col-end-2">
+                <button
+                  className="bg-black text-white float-left px-4 py-2 rounded"
+                  onClick={() => handlePageChange("prev")}
+                >
+                  Previous Page
+                </button>
+              </div>
+            )}
+            <div className="col-start-2 col-end-3">
+              <div className="flex justify-center items-center h-full">
+                <span>Showing page {currentPage} of {PAGE_TOTAL_COUNT}</span>
+              </div>
+            </div>
+            {!isLastPage && (
+              <div className="col-start-3 col-end-4 ">
+                <button
+                  className="bg-black text-white float-right px-4 py-2 rounded"
+                  onClick={() => handlePageChange("next")}
+                >
+                  Next Page
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="mx-auto mt-10 grid max-w-2xl grid-cols-1 gap-y-16 gap-x-8 sm:mt-16 sm:pt-8 lg:mx-0 lg:max-w-none lg:grid-cols-3">
+            {postsToShow.map((post) => {
               const { id, userId, title, body } = post;
               const author = usersByIdData[userId as number];
               const authorName = (author?.name as string) ?? "No author";
