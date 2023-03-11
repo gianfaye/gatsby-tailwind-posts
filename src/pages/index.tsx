@@ -6,6 +6,7 @@ import {
   SortingOrder,
 } from "../utils/types";
 import PostsList from "../components/PostsList";
+import PageSelector from "../components/PageSelector";
 
 const PAGE_TOTAL_COUNT = 2;
 
@@ -22,8 +23,6 @@ const IndexPage: React.FC<PageProps> = () => {
 
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [postsPerPage, setPostsPerPage] = useState<ApiResponseObject[]>([]);
-  const isFirstPage = currentPage === 1;
-  const isLastPage = currentPage === PAGE_TOTAL_COUNT;
 
   const getPostsData = async () => {
     const response = await fetch("https://jsonplaceholder.typicode.com/posts");
@@ -75,14 +74,6 @@ const IndexPage: React.FC<PageProps> = () => {
     setPostsPerPage(currentPosts);
   }, [sortedPostsData, currentPage]);
 
-  const handlePageChange = (action: string) => {
-    if (action === "prev") {
-      setCurrentPage(currentPage - 1);
-      return;
-    }
-    setCurrentPage(currentPage + 1);
-  };
-
   const handlePostsSorting = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const sort = event.target.value as SortingOrder;
     setSortingOrder(sort);
@@ -116,39 +107,21 @@ const IndexPage: React.FC<PageProps> = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 border-t border-gray-200 pt-10 mt-10">
-            {!isFirstPage && (
-              <div className="col-start-1 col-end-2">
-                <button
-                  className="bg-black text-white float-left px-4 py-2 rounded"
-                  onClick={() => handlePageChange("prev")}
-                >
-                  Previous Page
-                </button>
-              </div>
-            )}
-            <div className="col-start-2 col-end-3">
-              <div className="flex justify-center items-center h-full">
-                <span>
-                  Showing page {currentPage} of {PAGE_TOTAL_COUNT}
-                </span>
-              </div>
-            </div>
-            {!isLastPage && (
-              <div className="col-start-3 col-end-4 ">
-                <button
-                  className="bg-black text-white float-right px-4 py-2 rounded"
-                  onClick={() => handlePageChange("next")}
-                >
-                  Next Page
-                </button>
-              </div>
-            )}
-          </div>
+          <PageSelector
+            currentPage={currentPage}
+            pageTotalCount={PAGE_TOTAL_COUNT}
+            setCurrentPage={setCurrentPage}
+          />
 
           <div className="mx-auto mt-10 grid max-w-2xl grid-cols-1 gap-y-16 gap-x-8 sm:mt-16 sm:pt-8 lg:mx-0 lg:max-w-none lg:grid-cols-3">
             <PostsList posts={postsPerPage} usersById={usersByIdData} />
           </div>
+
+          <PageSelector
+            currentPage={currentPage}
+            pageTotalCount={PAGE_TOTAL_COUNT}
+            setCurrentPage={setCurrentPage}
+          />
         </div>
       </div>
     </main>
