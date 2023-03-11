@@ -5,10 +5,12 @@ import {
   IdToApiResponseObject,
   SortingOrder,
 } from "../utils/types";
-import PostsList from "../components/PostsList";
-import PageSelector from "../components/PageSelector";
-import AuthorFilter from "../components/AuthorFilter";
-import PostsSort from "../components/PostsSort";
+import {
+  AuthorFilter,
+  PageSelector,
+  PostsList,
+  PostsSort,
+} from "../components";
 
 const PAGE_TOTAL_COUNT = 2;
 
