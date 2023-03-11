@@ -17,7 +17,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "./node_modules/.bin/eslint . --ext .ts,.tsx",
     "lint:fix": "./node_modules/.bin/eslint --fix . --ext .ts,.tsx",
-    "deploy": "gatsby build && gh-pages -d public"
+    "deploy": "gatsby build --prefix-paths && gh-pages -d public"
   },
   "dependencies": {
     "gatsby": "^5.7.0",
